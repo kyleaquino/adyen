@@ -16,14 +16,20 @@ class AdyenCheckout:
         self.base_amount = amount.get("value")
         self.base_currency = amount.get("currency") or "USD"
 
-        self.reference = str(uuid.uuid4())
+        self.reference = data.get("reference") or str(uuid.uuid4())
         self.return_url = data.get("returnUrl")
-        self.merchant_account = config.adyen_merchant_acct
+        self.merchant_account = data.get("merchantAccount") or config.adyen_merchant_acct
         self.shopper_reference = data.get("shopperReference")
         self.country_code = data.get("countryCode") or "US"
         self.shopper_email = data.get("shopperEmail")
         self.shopper_locale = data.get("shopperLocale") or "en-US"
-        self.line_items = []
+
+        # Result Parameters
+        self.payment_id = data.get("id")
+        self.reusable = data.get("reusable")
+        self.expires_at = data.get("expiresAt")
+        self.url = data.get("url")
+        self.status = data.get("status")
 
     def to_json(self):
         """
@@ -41,7 +47,7 @@ class AdyenCheckout:
         }
 
     def payment_links(self, request):
-        return self.adyen.checkout.payment_links_api.payment_links(request)
+        return AdyenCheckout(self.adyen.checkout.payment_links_api.payment_links(request).message)
 
     def create_payment(self, amount, currency, return_url):
         self.base_amount = amount
